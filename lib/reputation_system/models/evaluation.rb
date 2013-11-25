@@ -22,7 +22,7 @@ module ReputationSystem
     belongs_to :target, :polymorphic => true
     has_one :sent_messages, :as => :sender, :class_name => 'ReputationSystem::ReputationMessage', :dependent => :destroy
 
-    attr_accessible :reputation_name, :value, :source, :source_id, :source_type, :target, :target_id, :target_type
+    #attr_accessible :reputation_name, :value, :source, :source_id, :source_type, :target, :target_id, :target_type
 
     # Sets an appropriate source type in case of Single Table Inheritance.
     before_validation :set_source_type_for_sti
@@ -43,9 +43,11 @@ module ReputationSystem
     end
 
     def self.create_evaluation(reputation_name, value, source, target)
-      ReputationSystem::Evaluation.create!(:reputation_name => reputation_name.to_s, :value => value,
-                           :source_id => source.id, :source_type => source.class.name,
-                           :target_id => target.id, :target_type => target.class.name)
+      ReputationSystem::Evaluation.create!(evaluation_params)
+
+      #ReputationSystem::Evaluation.create!(:reputation_name => reputation_name.to_s, :value => value,
+      #                     :source_id => source.id, :source_type => source.class.name,
+      #                     :target_id => target.id, :target_type => target.class.name)
     end
 
     # Override exists? class method.
@@ -80,6 +82,12 @@ module ReputationSystem
         unless source_type == ReputationSystem::Network.get_reputation_def(target_type, reputation_name)[:source].to_s.camelize
           errors.add(:source_type, "#{source_type} is not source of #{reputation_name} reputation")
         end
+      end
+
+    private
+
+      def evaluation_params
+        params.require(:evaluation).permit(:reputation_name, :value, :source, :source_id, :source_type, :target, :target_id, :target_type)
       end
   end
 end
