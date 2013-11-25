@@ -26,7 +26,7 @@ module ReputationSystem
     end
     has_many :sent_messages, :as => :sender, :class_name => 'ReputationSystem::ReputationMessage', :dependent => :destroy
 
-    attr_accessible :reputation_name, :value, :aggregated_by, :active, :target, :target_id, :target_type, :received_messages
+    #attr_accessible :reputation_name, :value, :aggregated_by, :active, :target, :target_id, :target_type, :received_messages
 
     before_validation :set_target_type_for_sti
     before_save :change_zero_value_in_case_of_product_process
@@ -49,7 +49,7 @@ module ReputationSystem
     def self.create_reputation(reputation_name, target, process)
       create_options = {:reputation_name => reputation_name.to_s, :target_id => target.id,
                         :target_type => target.class.name, :aggregated_by => process.to_s}
-      rep = create(create_options)
+      rep = create(reputation_params)
       initialize_reputation_value(rep, target, process)
     end
 
@@ -207,5 +207,12 @@ module ReputationSystem
         ReputationSystem::ReputationMessage.delete_all(:sender_type => self.class.name, :sender_id => self.id)
         ReputationSystem::ReputationMessage.delete_all(:receiver_id => self.id)
       end
+
+    private
+
+    def reputation_params
+      params.require(:reputation).permit(:reputation_name, :value, :aggregated_by, :active, :target, :target_id, :target_type, :received_messages)
+    end
+
   end
 end
